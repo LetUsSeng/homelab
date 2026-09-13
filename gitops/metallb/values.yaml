@@ -1,0 +1,9 @@
+# MetalLB in layer 2 mode. The IPAddressPool and L2Advertisement live in
+# gitops/metallb-config since the CRDs need to exist before they can be applied.
+speaker:
+  frr:
+    enabled: false
+
+# the chart bundles frr-k8s (BGP) and enables it by default, not needed for L2
+frrk8s:
+  enabled: false
