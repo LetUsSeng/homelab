@@ -179,7 +179,7 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   }
 
   lifecycle {
-    ignore_changes = [disk[0].file_id]
+    ignore_changes = [disk[0].file_id, initialization[0].user_data_file_id]
   }
 
 }
