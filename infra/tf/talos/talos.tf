@@ -7,6 +7,11 @@ locals {
   install_image          = "factory.talos.dev/installer/${local.talos_image_factory_id}:v${local.talos_version}"
 
   nameservers = ["75.75.75.75", "75.75.76.76"]
+
+  control_plane_ipv4_info = {
+    for key, vm in proxmox_virtual_environment_vm.control_plane :
+    key => one([for ip in flatten(vm.ipv4_addresses) : ip if startswith(ip, "10.0.0.")])
+  }
 }
 
 resource "proxmox_download_file" "talos_image_1_14_0" {
@@ -96,28 +101,32 @@ resource "proxmox_virtual_environment_file" "control_plane_config" {
 }
 
 resource "talos_machine_configuration_apply" "control_machine_config_apply" {
-  for_each = local.control_planes
+  for_each = local.control_plane_ipv4_info
 
   client_configuration        = talos_machine_secrets.secrets.client_configuration
   machine_configuration_input = data.talos_machine_configuration.control_plane_config[each.key].machine_configuration
-  node                        = each.value.ip_config.ipv4.address
+  node                        = each.value
 
-  depends_on = [proxmox_virtual_environment_vm.control_plane]
 }
 
 resource "talos_machine_bootstrap" "control_plane_bootstrap" {
   client_configuration = talos_machine_secrets.secrets.client_configuration
-  node                 = local.control_planes.control_plane_0.ip_config.ipv4.address
-  endpoint             = local.control_planes.control_plane_0.ip_config.ipv4.address
+  node                 = local.control_plane_ipv4_info["control_plane_0"]
+  endpoint             = local.control_plane_ipv4_info["control_plane_0"]
 
   depends_on = [talos_machine_configuration_apply.control_machine_config_apply]
+
 }
 
 resource "talos_cluster_kubeconfig" "kubeconfig" {
   client_configuration = talos_machine_secrets.secrets.client_configuration
-  node                 = local.control_planes.control_plane_0.ip_config.ipv4.address
+  node                 = local.control_plane_ipv4_info["control_plane_0"]
 
   depends_on = [talos_machine_bootstrap.control_plane_bootstrap]
+
+  lifecycle {
+    replace_triggered_by = [talos_machine_bootstrap.control_plane_bootstrap]
+  }
 }
 
 output "talosconfig" {

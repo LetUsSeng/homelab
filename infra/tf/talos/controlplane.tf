@@ -10,8 +10,8 @@ locals {
     operating_system = {
       type = "l26"
     }
-    gateway = "10.0.0.1" # NOTE: Probably should be in the locals.tf file
-    tags    = ["terraform", "talos", "control plane"]
+    gateway = "10.0.0.1"
+    tags    = ["control-plane", "talos", "terraform"]
   }
 
   control_planes = {
