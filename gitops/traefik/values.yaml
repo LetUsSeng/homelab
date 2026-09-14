@@ -24,6 +24,23 @@ providers:
       - proxmox
       - vault
 
+# all Ingresses are https-only; the *.letusseng.com default cert covers every host
+ports:
+  web:
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+# wildcard *.letusseng.com cert from cert-manager (gitops/cert-manager-crds), served for every Ingress.
+# Until the secret exists traefik falls back to its self-signed cert.
+tlsStore:
+  default:
+    defaultCertificate:
+      secretName: letusseng-com-tls
+
 service:
   annotations:
     # same IP the old ingress-nginx used
