@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: proxmox
+spec:
+  # https backend + sticky sessions are configured on the proxmox Service
+  ingressClassName: traefik
+  rules:
+  - host: proxmox.letusseng.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: proxmox
+            port:
+              number: 8006
+  # no secretName: traefik serves its default *.letusseng.com cert
+  tls:
+    - hosts:
+      - proxmox.letusseng.com

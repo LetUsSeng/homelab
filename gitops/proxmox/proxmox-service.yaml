@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxmox
+  annotations:
+    # proxmox only serves https (self-signed), see serverstransport.yaml
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+    traefik.ingress.kubernetes.io/service.serverstransport: proxmox-proxmox-insecure@kubernetescrd
+    # pin a browser to one proxmox host, the web ui session isn't shared across nodes
+    traefik.ingress.kubernetes.io/service.sticky.cookie: "true"
+    traefik.ingress.kubernetes.io/service.sticky.cookie.name: pve_backend
+spec:
+  type: ClusterIP
+  ports:
+    - name: https
+      protocol: TCP
+      port: 8006
+      targetPort: 8006

@@ -1,0 +1,7 @@
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: proxmox-insecure
+spec:
+  # proxmox hosts use their default self-signed certificates
+  insecureSkipVerify: true
