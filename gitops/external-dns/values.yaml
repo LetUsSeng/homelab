@@ -1,0 +1,29 @@
+# external-dns publishes letusseng.com hostnames from Ingresses and annotated
+# Services into pihole (v6 API).
+provider:
+  name: pihole
+
+env:
+  - name: EXTERNAL_DNS_PIHOLE_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        # copied from pihole/pihole-admin by scripts/install-external-dns.sh
+        name: pihole-password
+        key: EXTERNAL_DNS_PIHOLE_PASSWORD
+
+extraArgs:
+  - --pihole-server=http://pihole-web.pihole.svc.cluster.local
+
+sources:
+  - service
+  - ingress
+
+# pihole only supports A/AAAA/CNAME, so there are no TXT records to track ownership
+registry: noop
+
+# never delete: without ownership external-dns can't tell its records apart from
+# ones added in the pihole ui. Remove stale records by hand.
+policy: upsert-only
+
+domainFilters:
+  - letusseng.com

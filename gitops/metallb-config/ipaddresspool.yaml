@@ -1,0 +1,8 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: default-pool
+spec:
+  # 10.0.0.100 is the talos api VIP, keep it out of the pool
+  addresses:
+    - 10.0.0.101-10.0.0.120

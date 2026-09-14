@@ -1,0 +1,10 @@
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: default-pool
+spec:
+  ipAddressPools:
+    - default-pool
+  # only announce on the node nic, not flannel.1
+  interfaces:
+    - ens18
