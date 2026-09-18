@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: influxdb
+  namespace: monitoring
+spec:
+  # replaces the chart's own ingress, which is still networking.k8s.io/v1beta1 (removed in k8s 1.22)
+  ingressClassName: traefik
+  rules:
+    - host: influxdb.letusseng.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: influxdb-influxdb2
+                port:
+                  name: http
+  # no secretName: traefik serves its default *.letusseng.com cert
+  tls:
+    - hosts:
+        - influxdb.letusseng.com

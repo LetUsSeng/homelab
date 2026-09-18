@@ -1,0 +1,19 @@
+# Holds proxmox host/VM metrics. PVE pushes them itself (Datacenter > Metric Server),
+# see gitops/monitoring/README.md.
+adminUser:
+  organization: homelab
+  bucket: proxmox
+  user: admin
+  # created by scripts/bootstrap-monitoring-secrets.sh, keys admin-password and admin-token
+  existingSecret: influxdb-auth
+
+persistence:
+  enabled: true
+  size: 10Gi
+  storageClass: longhorn
+
+# NOTE:
+# The chart still renders its Ingress as networking.k8s.io/v1beta1, removed back in k8s 1.22,
+# so it cannot be applied here. manifests/ingress.yaml replaces it.
+ingress:
+  enabled: false

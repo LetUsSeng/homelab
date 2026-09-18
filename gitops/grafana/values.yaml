@@ -1,0 +1,90 @@
+admin:
+  # created by scripts/bootstrap-monitoring-secrets.sh. Without this the chart's default
+  # adminPassword ("strongpassword") is used.
+  existingSecret: grafana-admin
+  userKey: admin-user
+  passwordKey: admin-password
+
+# dashboards created in the ui live here; the provisioned ones below are read-only
+persistence:
+  enabled: true
+  size: 5Gi
+  storageClassName: longhorn
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  hosts:
+    - grafana.letusseng.com
+  # no secretName: traefik serves its default *.letusseng.com cert
+  tls:
+    - hosts:
+        - grafana.letusseng.com
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: prometheus
+        url: http://prometheus-server.monitoring.svc.cluster.local
+        access: proxy
+        isDefault: true
+      - name: Loki
+        type: loki
+        uid: loki
+        url: http://loki.monitoring.svc.cluster.local:3100
+        access: proxy
+      - name: InfluxDB
+        type: influxdb
+        uid: influxdb
+        url: http://influxdb-influxdb2.monitoring.svc.cluster.local
+        access: proxy
+        # proxmox writes here, see gitops/monitoring/README.md
+        jsonData:
+          version: Flux
+          organization: homelab
+          defaultBucket: proxmox
+        secureJsonData:
+          token: ${INFLUXDB_TOKEN}
+
+# the token is read from the same secret the influxdb chart uses, never from git
+envValueFrom:
+  INFLUXDB_TOKEN:
+    secretKeyRef:
+      name: influxdb-auth
+      key: admin-token
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: default
+        orgId: 1
+        folder: ""
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/default
+
+# pinned revisions, fetched from grafana.com at pod start
+dashboards:
+  default:
+    node-exporter-full:
+      gnetId: 1860
+      revision: 41
+      datasource: Prometheus
+    kubernetes-global:
+      gnetId: 15757
+      revision: 43
+      datasource: Prometheus
+    kubernetes-namespaces:
+      gnetId: 15758
+      revision: 40
+      datasource: Prometheus
+    loki-logs:
+      gnetId: 13639
+      revision: 2
+      datasource: Loki

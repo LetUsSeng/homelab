@@ -1,0 +1,23 @@
+# Standalone prometheus (not kube-prometheus-stack). Targets are discovered by the chart's
+# default scrape config: apiserver, nodes, cadvisor, service endpoints and pods carrying
+# prometheus.io/scrape annotations. It ships no kube-scheduler/controller-manager/etcd jobs,
+# which suits talos: those components bind to localhost, so such jobs would sit permanently red.
+server:
+  retention: 30d
+  persistentVolume:
+    size: 20Gi
+    storageClass: longhorn
+
+# no receivers are configured yet (email/slack/ntfy), so alertmanager would only fire into the void
+alertmanager:
+  enabled: false
+
+# nothing pushes metrics
+prometheus-pushgateway:
+  enabled: false
+
+kube-state-metrics:
+  enabled: true
+
+prometheus-node-exporter:
+  enabled: true

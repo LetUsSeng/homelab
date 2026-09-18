@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: argocd
+spec:
+  destination:
+    namespace: monitoring
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+    - chart: grafana
+      # the chart in grafana/helm-charts is deprecated; it moved here on 2026-01-30
+      repoURL: https://grafana-community.github.io/helm-charts
+      targetRevision: "13.2.5"
+      helm:
+        releaseName: grafana
+        valueFiles:
+          - $values/gitops/grafana/values.yaml
+    - repoURL: https://github.com/LetUsSeng/homelab
+      targetRevision: master
+      ref: values
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    managedNamespaceMetadata:
+      labels:
+        # node-exporter needs hostPath/hostPID, which talos' default baseline PSS blocks
+        pod-security.kubernetes.io/enforce: privileged
+        pod-security.kubernetes.io/audit: privileged
+        pod-security.kubernetes.io/warn: privileged

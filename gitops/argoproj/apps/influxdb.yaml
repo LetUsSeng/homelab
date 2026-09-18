@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: influxdb
+  namespace: argocd
+spec:
+  destination:
+    namespace: monitoring
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+    - chart: influxdb2
+      repoURL: https://helm.influxdata.com/
+      targetRevision: "2.1.2"
+      helm:
+        releaseName: influxdb
+        valueFiles:
+          - $values/gitops/influxdb/values.yaml
+    # doubles as the $values ref and as the source of manifests/ingress.yaml, which replaces
+    # the chart's own ingress (still networking.k8s.io/v1beta1, removed in k8s 1.22)
+    - repoURL: https://github.com/LetUsSeng/homelab
+      targetRevision: master
+      path: gitops/influxdb/manifests
+      ref: values
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    managedNamespaceMetadata:
+      labels:
+        # node-exporter needs hostPath/hostPID, which talos' default baseline PSS blocks
+        pod-security.kubernetes.io/enforce: privileged
+        pod-security.kubernetes.io/audit: privileged
+        pod-security.kubernetes.io/warn: privileged

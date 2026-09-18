@@ -33,8 +33,9 @@ The `root` Application watches `gitops/argoproj/apps/`, so adding an app is one 
 plus a push to `master`. Applications sync from github, never from your working tree.
 
 ## Migration status
-Managed by ArgoCD: `argocd` itself, plus `cert-manager-crds`, `metallb-config`, `proxmox`
-(plain manifests).
+Managed by ArgoCD: `argocd` itself, the monitoring stack (`prometheus`, `loki`, `alloy`, `grafana`,
+`influxdb` — see `gitops/monitoring/README.md`), plus `cert-manager-crds`, `metallb-config` and
+`proxmox` (plain manifests).
 
 Still installed by `scripts/install-*.sh`: traefik, metallb, longhorn, pihole, external-dns,
 cert-manager. These are live helm releases; ArgoCD templates charts itself instead of reusing
