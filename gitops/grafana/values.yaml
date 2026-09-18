@@ -68,6 +68,20 @@ dashboardProviders:
         editable: true
         options:
           path: /var/lib/grafana/dashboards/default
+      # its own provider: the chart mounts a dashboard configmap over the whole provider directory,
+      # which would hide the gnetId downloads in default
+      - name: proxmox
+        orgId: 1
+        folder: Proxmox
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/proxmox
+
+# built from gitops/grafana/manifests
+dashboardsConfigMaps:
+  proxmox: grafana-dashboards-proxmox
 
 # pinned revisions, fetched from grafana.com at pod start
 dashboards:

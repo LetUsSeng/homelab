@@ -39,24 +39,24 @@ without node-exporter; what's missing is host-level detail (disk, network, senso
 nodes specifically.
 
 ## Proxmox metrics
-PVE pushes its own host and VM metrics; nothing scrapes it. Add the metric server once per cluster
-in **Datacenter > Metric Server > Add > InfluxDB**:
+PVE pushes its own host and VM metrics; nothing scrapes it. The metric server (Datacenter > Metric
+Server, `homelab`) is managed by `infra/tf/proxmox/metric-server`. It sends to
+`https://influxdb.letusseng.com` (org `homelab`, bucket `proxmox`) with a token that terraform
+mints from the `influxdb-auth` admin token and that can only write to the `proxmox` bucket.
+```
+aws sso login --profile homelab
+export PROXMOX_VE_ENDPOINT=... PROXMOX_VE_API_TOKEN=...
+tofu -chdir=infra/tf/proxmox/metric-server init
+tofu -chdir=infra/tf/proxmox/metric-server apply
+```
+It reads `influxdb-auth` through the `admin@letusseng-cluster` kube context, so run the bootstrap
+first. `letusseng.com` only exists in pihole, so the same root also sets each node's dns to pihole
+with comcast (`75.75.75.75`) as the fallback, so the nodes still resolve public names while the
+cluster is down.
 
-| field | value |
-| --- | --- |
-| Name | `homelab` |
-| Server | `influxdb.letusseng.com` |
-| Port | `443` |
-| Protocol | `HTTPS` |
-| Organization | `homelab` |
-| Bucket | `proxmox` |
-| Token | see below |
-
-The `admin-token` from `influxdb-auth` works, but it can do anything in influx. Better: in the
-influx ui (https://influxdb.letusseng.com) go to **Load Data > API Tokens > Generate > Custom API
-Token**, give it write access to the `proxmox` bucket only, and use that.
-
-Data lands in grafana's InfluxDB datasource (Flux, org `homelab`, bucket `proxmox`).
+Data lands in grafana's InfluxDB datasource (Flux, org `homelab`, bucket `proxmox`). The
+**Proxmox > Proxmox VE** dashboard is a patched copy of grafana.com 23164 in
+`gitops/grafana/manifests/proxmox-ve.json`; edit that file rather than the provisioned dashboard.
 
 ## Retention
 prometheus 30d / 20Gi, loki 14d / 20Gi, influxdb 10Gi, grafana 5Gi. Loki only deletes because the
