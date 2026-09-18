@@ -28,11 +28,11 @@ server:
     enabled: true
     ingressClassName: traefik
     hosts:
-      - host: vault.cloudyfluke.com
+      - host: vault.letusseng.com
     tls:
-      - secretName: cloudyfluke-com-tls
+      - secretName: letusseng-com-tls
         hosts:
-          - vault.cloudyfluke.com
+          - vault.letusseng.com
   auditStorage:
     enabled: true
   ha:
