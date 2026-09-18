@@ -17,8 +17,10 @@ spec:
         releaseName: grafana
         valueFiles:
           - $values/gitops/grafana/values.yaml
+    # doubles as the $values ref and as the source of manifests/, the proxmox dashboard configmap
     - repoURL: https://github.com/LetUsSeng/homelab
       targetRevision: master
+      path: gitops/grafana/manifests
       ref: values
   syncPolicy:
     automated:

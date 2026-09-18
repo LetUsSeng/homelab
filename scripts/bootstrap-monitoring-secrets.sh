@@ -23,7 +23,7 @@ if ! kubectl -n monitoring get secret grafana-admin >/dev/null 2>&1; then
 fi
 
 # NOTE:
-# admin-token is what proxmox uses for its influxdb metric server, see gitops/monitoring/README.md.
+# admin-token lets infra/tf/proxmox/metric-server mint the write-only token proxmox uses.
 if ! kubectl -n monitoring get secret influxdb-auth >/dev/null 2>&1; then
 	kubectl -n monitoring create secret generic influxdb-auth \
 		--from-file=admin-password=<(rand) \

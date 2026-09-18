@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: monitoring
+
+# mounted by the chart through dashboardsConfigMaps in ../values.yaml
+configMapGenerator:
+  - name: grafana-dashboards-proxmox
+    files:
+      # grafana.com 23164 rev 1, patched: datasource pinned to uid influxdb, the broken server
+      # variable query restored from its definition, bucket defaulted to proxmox
+      - proxmox-ve.json
+
+generatorOptions:
+  # values.yaml references the configmap by name
+  disableNameSuffixHash: true
