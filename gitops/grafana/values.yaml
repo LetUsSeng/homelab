@@ -5,6 +5,12 @@ admin:
   userKey: admin-user
   passwordKey: admin-password
 
+# NOTE:
+# the pvc is longhorn ReadWriteOnce, so a rolling update deadlocks whenever the new pod lands on
+# another node: it waits for the volume, and the old pod holding it waits for the new one.
+deploymentStrategy:
+  type: Recreate
+
 # dashboards created in the ui live here; the provisioned ones below are read-only
 persistence:
   enabled: true
