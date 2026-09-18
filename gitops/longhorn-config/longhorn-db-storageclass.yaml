@@ -1,0 +1,17 @@
+# For databases that replicate themselves (cloudnative-pg). One longhorn replica pinned to the pod's
+# node, so each postgres instance does local io instead of 3 network copies of an already replicated
+# volume. Retain, so pruning a pvc never takes the data with it.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn-db
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+# strict-local needs the volume created where the pod lands
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  numberOfReplicas: "1"
+  dataLocality: strict-local
+  staleReplicaTimeout: "30"
+  fsType: ext4

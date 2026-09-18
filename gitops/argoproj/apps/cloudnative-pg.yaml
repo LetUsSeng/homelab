@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudnative-pg
+  namespace: argocd
+spec:
+  destination:
+    namespace: cnpg-system
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+    - chart: cloudnative-pg
+      repoURL: https://cloudnative-pg.github.io/charts
+      targetRevision: "0.29.0"
+      helm:
+        releaseName: cnpg
+        valueFiles:
+          - $values/gitops/cloudnative-pg/values.yaml
+    - repoURL: https://github.com/LetUsSeng/homelab
+      targetRevision: master
+      ref: values
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      # the Cluster CRD is past the client-side apply annotation limit
+      - ServerSideApply=true

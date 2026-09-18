@@ -1,0 +1,28 @@
+# Holds every secret in infisical, encrypted with ENCRYPTION_KEY. No backups: 3 instances, one per
+# node, cover a lost node or disk; a lost cluster means re-entering the values (see ../README.md).
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: infisical-db
+  annotations:
+    # before the chart, so the server starts against a ready db
+    argocd.argoproj.io/sync-wave: "-1"
+    # the CRD comes from the cloudnative-pg app, which may not have synced yet on a fresh cluster
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  instances: 3
+  storage:
+    # 1 longhorn replica, strict-local: cnpg does the replication (gitops/longhorn-config)
+    storageClass: longhorn-db
+    size: 5Gi
+  affinity:
+    enablePodAntiAffinity: true
+    podAntiAffinityType: required
+    topologyKey: kubernetes.io/hostname
+  bootstrap:
+    initdb:
+      database: infisical
+      owner: infisical
+      # created by scripts/bootstrap-infisical-secrets.sh, which also builds DB_CONNECTION_URI from it
+      secret:
+        name: infisical-db-credentials

@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infisical-operator
+  namespace: argocd
+spec:
+  destination:
+    namespace: infisical-operator-system
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+    - chart: secrets-operator
+      repoURL: https://dl.cloudsmith.io/public/infisical/helm-charts/helm/charts/
+      targetRevision: "0.11.9"
+      helm:
+        releaseName: infisical-operator
+        valueFiles:
+          - $values/gitops/infisical-operator/values.yaml
+    # doubles as the $values ref and as the source of manifests/, the service account InfisicalSecrets
+    # authenticate as
+    - repoURL: https://github.com/LetUsSeng/homelab
+      targetRevision: master
+      path: gitops/infisical-operator/manifests
+      ref: values
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

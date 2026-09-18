@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infisical
+  namespace: argocd
+spec:
+  destination:
+    namespace: infisical
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+    - chart: infisical-standalone
+      repoURL: https://dl.cloudsmith.io/public/infisical/helm-charts/helm/charts/
+      targetRevision: "1.11.0"
+      helm:
+        releaseName: infisical
+        valueFiles:
+          - $values/gitops/infisical/values.yaml
+    # doubles as the $values ref and as the source of manifests/: the cloudnative-pg db and valkey
+    - repoURL: https://github.com/LetUsSeng/homelab
+      targetRevision: master
+      path: gitops/infisical/manifests
+      ref: values
+  # NOTE:
+  # the chart stamps an updatedAt: {{ now }} annotation on the deployment and its pod template, so
+  # every render differs and auto-sync would roll the pod every few minutes.
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: infisical
+      jsonPointers:
+        - /metadata/annotations/updatedAt
+        - /spec/template/metadata/annotations/updatedAt
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true
+    # the Cluster CRD comes from the cloudnative-pg app, which may land after this one
+    retry:
+      limit: 10
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m

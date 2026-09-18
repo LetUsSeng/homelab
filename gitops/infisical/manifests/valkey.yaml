@@ -1,0 +1,79 @@
+# Infisical's cache and job queue. Nothing in it outlives a restart that matters, so one replica on
+# an emptyDir. Official image instead of the chart's bitnamilegacy redis subchart.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: infisical-redis
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: infisical-redis
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: infisical-redis
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        # the valkey user in the alpine image
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: valkey
+          image: valkey/valkey:9.1.2-alpine
+          args:
+            - --requirepass
+            - $(VALKEY_PASSWORD)
+            - --save
+            - ""
+            - --appendonly
+            - "no"
+          env:
+            # created by scripts/bootstrap-infisical-secrets.sh
+            - name: VALKEY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: infisical-redis
+                  key: password
+          ports:
+            - name: redis
+              containerPort: 6379
+          readinessProbe:
+            tcpSocket:
+              port: redis
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: infisical-redis
+spec:
+  selector:
+    app.kubernetes.io/name: infisical-redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis
