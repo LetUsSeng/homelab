@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  # app-of-apps: every Application in gitops/argoproj/apps is managed from git,
+  # so adding an app is just committing a file there. Applied by scripts/install-argocd.sh.
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    repoURL: https://github.com/LetUsSeng/homelab
+    targetRevision: master
+    path: gitops/argoproj/apps
+    directory:
+      recurse: true
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

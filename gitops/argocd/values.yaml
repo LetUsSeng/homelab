@@ -1,0 +1,16 @@
+configs:
+  params:
+    # traefik terminates tls with the *.letusseng.com wildcard cert. Without this
+    # argocd-server serves https itself and the ingress ends in a redirect loop.
+    server.insecure: true
+
+server:
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hostname: cd.letusseng.com
+    # extraTls (not tls: true) so the ingress has no secretName and traefik serves
+    # its default *.letusseng.com cert, same as pihole and proxmox
+    extraTls:
+      - hosts:
+          - cd.letusseng.com

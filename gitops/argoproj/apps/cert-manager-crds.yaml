@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager-crds
+  namespace: argocd
+spec:
+  # ClusterIssuers are cluster scoped and the wildcard Certificate pins namespace: traefik,
+  # so this destination namespace is only a fallback
+  destination:
+    namespace: cert-manager
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    repoURL: https://github.com/LetUsSeng/homelab
+    targetRevision: master
+    path: gitops/cert-manager-crds
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
