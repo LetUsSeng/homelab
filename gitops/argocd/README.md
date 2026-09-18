@@ -13,16 +13,28 @@ Initial admin password:
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d
 ```
 
-## ArgoCD is not self-managed
-ArgoCD itself is installed by `scripts/install-argocd.sh`, not by an Application, so a broken
-ArgoCD can always be fixed by re-running the script. Chart or values changes need a re-run.
+## ArgoCD is self-managed
+ArgoCD manages itself through `gitops/argoproj/apps/argocd.yaml`, so chart and values changes are
+a commit to `master`. The chart version lives only in that Application; `scripts/install-argocd.sh`
+reads `targetRevision` out of it, so the two can't drift.
+
+`scripts/install-argocd.sh` is the bootstrap and the break-glass path. The helm release is kept on
+purpose, so re-running the script is a normal `helm upgrade`. To fix a broken argocd by hand:
+```
+argocd app set argocd --sync-policy none   # stop selfHeal reverting you
+./scripts/install-argocd.sh
+argocd app set argocd --sync-policy automated
+```
+The chart's `argocd-redis-secret-init` helm hook becomes a PreSync hook, so that Job runs on every
+sync of this app. It is idempotent (it only creates the `argocd-redis` secret when missing).
 
 ## Adding an app
 The `root` Application watches `gitops/argoproj/apps/`, so adding an app is one file there
 plus a push to `master`. Applications sync from github, never from your working tree.
 
 ## Migration status
-Managed by ArgoCD: `cert-manager-crds`, `metallb-config`, `proxmox` (plain manifests).
+Managed by ArgoCD: `argocd` itself, plus `cert-manager-crds`, `metallb-config`, `proxmox`
+(plain manifests).
 
 Still installed by `scripts/install-*.sh`: traefik, metallb, longhorn, pihole, external-dns,
 cert-manager. These are live helm releases; ArgoCD templates charts itself instead of reusing

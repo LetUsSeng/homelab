@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+spec:
+  # argocd manages itself. scripts/install-argocd.sh only bootstraps (and is the break-glass
+  # path when argocd is broken); it reads the chart version out of this file.
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+    - chart: argo-cd
+      repoURL: https://argoproj.github.io/argo-helm
+      # source of truth for the chart version
+      targetRevision: "10.9.2"
+      helm:
+        # must match the helm release name or every resource gets renamed
+        releaseName: argocd
+        valueFiles:
+          - $values/gitops/argocd/values.yaml
+    - repoURL: https://github.com/LetUsSeng/homelab
+      targetRevision: master
+      ref: values
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      # the Application CRD alone is ~766KB, past the client-side apply annotation limit
+      - ServerSideApply=true

@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ARGOCD_CHART_VERSION=10.9.2
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# NOTE:
+# argocd manages itself, so the Application owns the chart version and this script follows it.
+# The pattern only matches the quoted, digit-leading chart revision, never the git source's
+# `targetRevision: master`.
+APP_FILE="$ROOT_DIR/gitops/argoproj/apps/argocd.yaml"
+ARGOCD_CHART_VERSION="$(sed -n 's/^ *targetRevision: *"\([0-9][^"]*\)".*/\1/p' "$APP_FILE" | head -1)"
+: "${ARGOCD_CHART_VERSION:?could not read targetRevision from $APP_FILE}"
 
 # NOTE:
 # The UI is served through traefik (cd.letusseng.com), so run install-traefik.sh first.
