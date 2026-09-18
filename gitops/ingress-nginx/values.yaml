@@ -1,0 +1,8 @@
+controller:
+  service:
+    enabled: true
+    loadBalancerIP: "10.0.0.103"
+    externalTrafficPolicy: "Cluster"
+    replicaCount: 3
+  autoscaling:
+    enabled: true

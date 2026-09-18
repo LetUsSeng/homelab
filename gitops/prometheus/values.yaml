@@ -19,5 +19,6 @@ prometheus-pushgateway:
 kube-state-metrics:
   enabled: true
 
+# host-level metrics come from proxmox via influxdb instead, see gitops/monitoring/README.md
 prometheus-node-exporter:
-  enabled: true
+  enabled: false

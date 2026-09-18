@@ -5,7 +5,7 @@ argocd (`gitops/argoproj/apps/{prometheus,loki,alloy,grafana,influxdb}.yaml`).
 
 | app | chart | what it does |
 | --- | --- | --- |
-| prometheus | prometheus 29.30.1 | metrics, with node-exporter + kube-state-metrics |
+| prometheus | prometheus 29.30.1 | metrics, with kube-state-metrics (no node-exporter) |
 | loki | loki 7.3.0 | logs, SingleBinary on a longhorn pvc |
 | alloy | alloy 1.12.1 | daemonset shipping pod logs into loki |
 | grafana | grafana 13.2.5 | ui at https://grafana.letusseng.com |
@@ -27,10 +27,16 @@ kubectl -n monitoring get secret grafana-admin -o jsonpath='{.data.admin-passwor
 kubectl -n monitoring get secret influxdb-auth -o jsonpath='{.data.admin-token}' | base64 -d
 ```
 
-## Why the namespace is privileged
-node-exporter needs hostPath and hostPID, which talos' default baseline pod security standard
-blocks, so the namespace is labeled privileged (same as `metallb-system`). Argocd keeps the labels
-in place through `managedNamespaceMetadata` on each app.
+## Host metrics come from proxmox, not node-exporter
+node-exporter is disabled. PVE already reports host and VM metrics into influxdb, and on this
+cluster node-exporter also failed on `talos-control-plane-0` (probes to :9100 timing out, images
+pulling at a crawl). Nothing left in the namespace needs hostPath or hostPID, so it stays on talos'
+default baseline pod security standard. Re-enabling node-exporter means labelling the namespace
+privileged, the way `metallb-system` is.
+
+Kubelet and cAdvisor metrics still come from the nodes themselves, so container cpu/memory works
+without node-exporter; what's missing is host-level detail (disk, network, sensors) for the k8s
+nodes specifically.
 
 ## Proxmox metrics
 PVE pushes its own host and VM metrics; nothing scrapes it. Add the metric server once per cluster
@@ -61,6 +67,7 @@ longhorn, which allows expansion if they fill up.
 - The prometheus chart's default scrape config finds the apiserver, nodes, cadvisor, and any pod or
   service annotated `prometheus.io/scrape: "true"`. Annotating traefik, longhorn and cert-manager is
   a good follow-up.
-- alertmanager and pushgateway are disabled; enable alertmanager once there's a receiver to send to.
+- alertmanager, pushgateway and node-exporter are disabled; enable alertmanager once there is a
+  receiver to send to.
 - The loki chart defaults to SimpleScalable with memcached caches (chunks-cache alone asks for 8GB),
   so `gitops/loki/values.yaml` turns all of that off. Don't drop those overrides.

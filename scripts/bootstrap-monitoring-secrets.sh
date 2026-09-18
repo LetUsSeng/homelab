@@ -5,14 +5,10 @@ set -euo pipefail
 # so the credentials have to come from somewhere outside it: run this once before the apps sync.
 
 # NOTE:
-# node-exporter needs hostPath/hostPID, which talos' default baseline pod security standard
-# blocks. Argocd also sets these labels (managedNamespaceMetadata), this is for the case where
-# the bootstrap runs before the first sync.
+# Nothing here needs hostPath or hostPID (alloy reads logs through the kubernetes api), so the
+# namespace stays on talos' default baseline pod security standard. Re-enabling node-exporter
+# would require labelling it privileged, the way metallb-system is.
 kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
-kubectl label namespace monitoring --overwrite \
-	pod-security.kubernetes.io/enforce=privileged \
-	pod-security.kubernetes.io/audit=privileged \
-	pod-security.kubernetes.io/warn=privileged
 
 # NOTE:
 # Generate only when the secret is missing, so re-runs never rotate credentials (the grafana

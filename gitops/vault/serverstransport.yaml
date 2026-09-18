@@ -1,0 +1,10 @@
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: vault-insecure
+  namespace: vault
+spec:
+  # vault's cert is signed by our own CA, stored in the vault-ha-tls secret under `vault.ca`.
+  # ServersTransport rootCAs only reads the `tls.ca`/`ca.crt` keys, so skip verification for
+  # the in-cluster hop instead.
+  insecureSkipVerify: true
