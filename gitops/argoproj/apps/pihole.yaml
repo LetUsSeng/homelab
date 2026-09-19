@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pihole
+  namespace: argocd
+spec:
+  # scripts/install-pihole.sh is only the bootstrap/break-glass path; it reads the chart version out
+  # of this file.
+  destination:
+    namespace: pihole
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+    - chart: pihole
+      repoURL: https://mojo2600.github.io/pihole-kubernetes
+      # source of truth for the chart version
+      targetRevision: "2.38.0"
+      helm:
+        # must match the helm release name, or every resource gets renamed and the dns service
+        # loses 10.0.0.101
+        releaseName: pihole
+        valueFiles:
+          - $values/gitops/pihole/values.yaml
+    # doubles as the $values ref and as the source of manifests/, the pihole-admin InfisicalSecret
+    - repoURL: https://github.com/LetUsSeng/homelab
+      targetRevision: master
+      path: gitops/pihole/manifests
+      ref: values
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
