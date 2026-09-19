@@ -1,0 +1,3 @@
+tailscale_auth_key: "{{ lookup('env', 'TAILSCALE_AUTH_KEY') }}"
+tailscale_up_args:
+  - --ssh
