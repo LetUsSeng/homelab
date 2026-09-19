@@ -26,11 +26,11 @@ locals {
         down_delay = "60"
       }
       cpu = {
-        cores = 6
+        cores = 7
       }
       memory = {
-        dedicated = 12288
-        floating  = 12288 # set equal to dedicated to enable ballooning
+        dedicated = 13969
+        floating  = 13969 # set equal to dedicated to enable ballooning
       }
       disk = {
         datastore_id = "local-lvm"
