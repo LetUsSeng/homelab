@@ -18,7 +18,7 @@ so they never land in tofu state.
 ## Install
 1. Create Infisical's own secrets. They can't live in Infisical, since it needs them to start:
    ```
-   INFISICAL_ADMIN_EMAIL=you@example.com ./scripts/bootstrap-infisical-secrets.sh
+   INFISICAL_ADMIN_EMAIL=you@example.com ./scripts/bootstrap/bootstrap-infisical-secrets.sh
    ```
    **Save `ENCRYPTION_KEY` and `AUTH_SECRET` in a password manager** (the script prints how).
 2. Merge to master. Argo syncs the four apps above. On first sync the chart's autoBootstrap job

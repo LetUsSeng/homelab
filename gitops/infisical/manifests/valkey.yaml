@@ -35,7 +35,7 @@ spec:
             - --appendonly
             - "no"
           env:
-            # created by scripts/bootstrap-infisical-secrets.sh
+            # created by scripts/bootstrap/bootstrap-infisical-secrets.sh
             - name: VALKEY_PASSWORD
               valueFrom:
                 secretKeyRef:

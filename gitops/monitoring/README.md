@@ -16,10 +16,14 @@ Prometheus and loki are cluster-internal; reach them through grafana, or `kubect
 ## Install
 Run the bootstrap **before** the apps sync, so the charts find their credentials:
 ```
-./scripts/bootstrap-monitoring-secrets.sh
+./scripts/bootstrap/bootstrap-monitoring-secrets.sh
 ```
 It creates the `monitoring` namespace and the `grafana-admin` / `influxdb-auth` secrets, and only
 generates what is missing, so re-runs never rotate anything.
+
+Once infisical is up, `gitops/grafana/manifests/infisical-secret.yaml` takes over `grafana-admin` and
+overwrites it with `homelab` / `prod` / `/monitoring/grafana` (keys `admin-user`, `admin-password`),
+see `gitops/infisical/README.md`. Put the values there first, or the login gets blanked.
 
 ```
 # grafana login: admin

@@ -1,4 +1,4 @@
-# created by scripts/bootstrap-monitoring-secrets.sh
+# created by scripts/bootstrap/bootstrap-monitoring-secrets.sh
 data "kubernetes_secret_v1" "influxdb_auth" {
   metadata {
     name      = "influxdb-auth"

@@ -4,7 +4,7 @@ set -euo pipefail
 # Infisical's own secrets. They cannot live in infisical (it needs them to start), so like
 # bootstrap-monitoring-secrets.sh this runs once before argocd syncs gitops/infisical.
 #
-# Usage: INFISICAL_ADMIN_EMAIL=you@example.com ./scripts/bootstrap-infisical-secrets.sh
+# Usage: INFISICAL_ADMIN_EMAIL=you@example.com ./scripts/bootstrap/bootstrap-infisical-secrets.sh
 #   (defaults to your git email)
 
 NS=infisical
