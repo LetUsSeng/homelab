@@ -1,0 +1,4 @@
+# Syncs secrets out of infisical into plain k8s Secrets (InfisicalSecret CRs), see
+# gitops/infisical/README.md. Talks to the server in-cluster, so pihole and traefik being down
+# never blocks a sync.
+hostAPI: http://infisical.infisical.svc:8080/api

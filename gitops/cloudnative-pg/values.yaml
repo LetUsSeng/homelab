@@ -1,0 +1,4 @@
+# Postgres operator. Clusters live next to the app that uses them, e.g.
+# gitops/infisical/manifests/postgres-cluster.yaml
+crds:
+  create: true

@@ -1,0 +1,45 @@
+# Secrets manager at https://infisical.letusseng.com, see ./README.md.
+infisical:
+  # names every resource plain "infisical" (service infisical.infisical.svc)
+  fullnameOverride: infisical
+
+  # a single pod is enough: consumers keep their last synced k8s Secret while it restarts
+  replicaCount: 1
+
+  image:
+    tag: "v0.165.12"
+
+  # created by scripts/bootstrap-infisical-secrets.sh: ENCRYPTION_KEY, AUTH_SECRET, DB_CONNECTION_URI,
+  # REDIS_URL, SITE_URL. db and redis are external (manifests/), so nothing else is injected.
+  kubeSecretRef: infisical-secrets
+
+  # NOTE:
+  # creates the admin user, the "homelab" org and an instance-admin machine identity on first sync,
+  # then writes that identity's token into infisical-bootstrap-secret, which infra/tf/infisical reads.
+  # Argo runs it as a PostSync hook every sync; --ignore-if-bootstrapped makes the re-runs no-ops.
+  autoBootstrap:
+    enabled: true
+    organization: homelab
+    # credentials from scripts/bootstrap-infisical-secrets.sh
+    credentialSecret:
+      name: infisical-bootstrap-credentials
+    secretDestination:
+      name: infisical-bootstrap-secret
+    secretTemplate: '{"data":{"token":"{{.Identity.Credentials.Token}}","organization-id":"{{.Organization.ID}}"}}'
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  hostName: infisical.letusseng.com
+  nginx:
+    enabled: false
+  # no secretName: traefik serves its default *.letusseng.com cert
+  tls:
+    - hosts:
+        - infisical.letusseng.com
+
+# replaced by manifests/postgres-cluster.yaml (cloudnative-pg) and manifests/valkey.yaml
+postgresql:
+  enabled: false
+redis:
+  enabled: false
