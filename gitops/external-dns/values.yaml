@@ -7,9 +7,14 @@ env:
   - name: EXTERNAL_DNS_PIHOLE_PASSWORD
     valueFrom:
       secretKeyRef:
-        # copied from pihole/pihole-admin by scripts/install-external-dns.sh
+        # copied from pihole/pihole-admin by scripts/install-external-dns.sh, then kept in sync from
+        # infisical by gitops/pihole/manifests/infisical-secret.yaml
         name: pihole-password
         key: EXTERNAL_DNS_PIHOLE_PASSWORD
+
+# restart when the infisical operator changes pihole-password
+deploymentAnnotations:
+  secrets.infisical.com/auto-reload: "true"
 
 extraArgs:
   - --pihole-server=http://pihole-web.pihole.svc.cluster.local

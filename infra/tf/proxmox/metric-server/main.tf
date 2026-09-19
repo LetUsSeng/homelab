@@ -1,4 +1,5 @@
-# created by scripts/bootstrap/bootstrap-monitoring-secrets.sh
+# created by scripts/bootstrap/bootstrap-monitoring-secrets.sh, kept in sync from infisical
+# (gitops/influxdb/manifests/infisical-secret.yaml)
 data "kubernetes_secret_v1" "influxdb_auth" {
   metadata {
     name      = "influxdb-auth"

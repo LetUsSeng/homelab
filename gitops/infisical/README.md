@@ -32,6 +32,16 @@ so they never land in tofu state.
    tofu -chdir=infra/tf/infisical output k8s_operator_identity_id
    ```
 
+## What's synced
+| infisical path | k8s Secret | InfisicalSecret |
+| --- | --- | --- |
+| `/monitoring/grafana` | `monitoring/grafana-admin` | `gitops/grafana/manifests/infisical-secret.yaml` |
+| `/monitoring/influxdb` | `monitoring/influxdb-auth` | `gitops/influxdb/manifests/infisical-secret.yaml` |
+| `/pihole/admin` | `pihole/pihole-admin`, `external-dns/pihole-password` | `gitops/pihole/manifests/infisical-secret.yaml` |
+
+The bootstrap and install scripts still create these for a from-scratch rebuild; the operator takes
+them over once infisical is running.
+
 ## Consuming a secret
 1. Add the folder to `local.folders` in `infra/tf/infisical/local.tf` and apply. The layout is
    `/<namespace>/<app>`.
@@ -62,7 +72,15 @@ so they never land in tofu state.
          secretNamespace: monitoring
          creationPolicy: Owner
    ```
-   Keys in the folder become keys in the Secret. To restart a deployment on change, annotate it with
+   Keys in the folder become keys in the Secret. To rename one, template the reference
+   (see `external-dns/pihole-password`):
+   ```yaml
+         template:
+           includeAllSecrets: false
+           data:
+             EXTERNAL_DNS_PIHOLE_PASSWORD: "{{ .password.Value }}"
+   ```
+   To restart a deployment on change, annotate it with
    `secrets.infisical.com/auto-reload: "true"`.
 4. If the Secret was created by hand before, copy its values into Infisical first, then delete it
    so the operator recreates it as its own.

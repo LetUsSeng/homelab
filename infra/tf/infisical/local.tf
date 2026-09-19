@@ -12,6 +12,7 @@ locals {
 
   # one folder per consuming namespace, one subfolder per app: /<namespace>/<app>
   folders = {
-    monitoring = ["grafana"]
+    monitoring = ["grafana", "influxdb"]
+    pihole     = ["admin"]
   }
 }

@@ -21,9 +21,13 @@ Run the bootstrap **before** the apps sync, so the charts find their credentials
 It creates the `monitoring` namespace and the `grafana-admin` / `influxdb-auth` secrets, and only
 generates what is missing, so re-runs never rotate anything.
 
-Once infisical is up, `gitops/grafana/manifests/infisical-secret.yaml` takes over `grafana-admin` and
-overwrites it with `homelab` / `prod` / `/monitoring/grafana` (keys `admin-user`, `admin-password`),
-see `gitops/infisical/README.md`. Put the values there first, or the login gets blanked.
+Once infisical is up, the operator takes both over and overwrites them with what's in infisical
+(`homelab` / `prod`), see `gitops/infisical/README.md`. Put the values there first, or they get blanked:
+- `grafana-admin`: `/monitoring/grafana`, keys `admin-user` and `admin-password`
+  (`gitops/grafana/manifests/infisical-secret.yaml`)
+- `influxdb-auth`: `/monitoring/influxdb`, keys `admin-password` and `admin-token`
+  (`gitops/influxdb/manifests/infisical-secret.yaml`). influxdb only reads these on first init, so
+  changing them in infisical does not rotate the real credentials.
 
 ```
 # grafana login: admin
