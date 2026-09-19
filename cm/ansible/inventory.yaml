@@ -1,0 +1,9 @@
+all:
+  children:
+    proxmox:
+      hosts:
+        pve-0: { ansible_host: 10.0.0.201 } # HP Z440
+        pve-1: { ansible_host: 10.0.0.202 } # HP Elitedesk
+        pve-2: { ansible_host: 10.0.0.203 } # HP Elitedesk
+      vars:
+        ansible_user: root
