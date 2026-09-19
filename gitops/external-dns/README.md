@@ -10,6 +10,8 @@ Records override pihole's `*.letusseng.com -> traefik` wildcard for that name.
 ## Install
 - run `./scripts/install-pihole.sh` first
 - `./scripts/install-external-dns.sh` copies the pihole admin password into `external-dns/pihole-password`
+- once infisical is up, `gitops/pihole/manifests/infisical-secret.yaml` keeps that copy in sync, and
+  external-dns restarts when it changes
 
 ## Caveat
 The policy is `upsert-only`, so deleting an Ingress/Service leaves its record in pihole.

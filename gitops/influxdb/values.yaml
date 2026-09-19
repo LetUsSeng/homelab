@@ -4,7 +4,8 @@ adminUser:
   organization: homelab
   bucket: proxmox
   user: admin
-  # created by scripts/bootstrap/bootstrap-monitoring-secrets.sh, keys admin-password and admin-token
+  # created by scripts/bootstrap/bootstrap-monitoring-secrets.sh, keys admin-password and admin-token,
+  # then kept in sync from infisical by manifests/infisical-secret.yaml
   existingSecret: influxdb-auth
 
 persistence:
