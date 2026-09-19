@@ -14,6 +14,14 @@ infisical:
   kubeSecretRef: infisical-secrets
 
   # NOTE:
+  # infisical refuses urls that resolve to private ips (ssrf guard), which rejects the kubernetes
+  # auth host https://kubernetes.default.svc (infra/tf/infisical) with "Local IPs not allowed as
+  # URL". Everything it talks to in this homelab is private anyway.
+  extraEnv:
+    - name: ALLOW_INTERNAL_IP_CONNECTIONS
+      value: "true"
+
+  # NOTE:
   # creates the admin user, the "homelab" org and an instance-admin machine identity on first sync,
   # then writes that identity's token into infisical-bootstrap-secret, which infra/tf/infisical reads.
   # Argo runs it as a PostSync hook every sync; --ignore-if-bootstrapped makes the re-runs no-ops.
