@@ -23,6 +23,6 @@ spec:
     initdb:
       database: infisical
       owner: infisical
-      # created by scripts/bootstrap-infisical-secrets.sh, which also builds DB_CONNECTION_URI from it
+      # created by scripts/bootstrap/bootstrap-infisical-secrets.sh, which also builds DB_CONNECTION_URI from it
       secret:
         name: infisical-db-credentials

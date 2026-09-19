@@ -1,5 +1,6 @@
 admin:
-  # synced from infisical by manifests/infisical-secret.yaml. Without this the chart's default
+  # created by scripts/bootstrap/bootstrap-monitoring-secrets.sh, then kept in sync from infisical by
+  # manifests/infisical-secret.yaml. Without this the chart's default
   # adminPassword ("strongpassword") is used.
   existingSecret: grafana-admin
   userKey: admin-user

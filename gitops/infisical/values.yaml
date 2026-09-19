@@ -9,8 +9,9 @@ infisical:
   image:
     tag: "v0.165.12"
 
-  # created by scripts/bootstrap-infisical-secrets.sh: ENCRYPTION_KEY, AUTH_SECRET, DB_CONNECTION_URI,
-  # REDIS_URL, SITE_URL. db and redis are external (manifests/), so nothing else is injected.
+  # created by scripts/bootstrap/bootstrap-infisical-secrets.sh: ENCRYPTION_KEY, AUTH_SECRET,
+  # DB_CONNECTION_URI, REDIS_URL, SITE_URL. db and redis are external (manifests/), so nothing else
+  # is injected.
   kubeSecretRef: infisical-secrets
 
   # NOTE:
@@ -28,7 +29,7 @@ infisical:
   autoBootstrap:
     enabled: true
     organization: homelab
-    # credentials from scripts/bootstrap-infisical-secrets.sh
+    # credentials from scripts/bootstrap/bootstrap-infisical-secrets.sh
     credentialSecret:
       name: infisical-bootstrap-credentials
     secretDestination:
