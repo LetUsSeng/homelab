@@ -18,8 +18,12 @@ Run the bootstrap **before** the apps sync, so the charts find their credentials
 ```
 ./scripts/bootstrap-monitoring-secrets.sh
 ```
-It creates the `monitoring` namespace and the `grafana-admin` / `influxdb-auth` secrets, and only
-generates what is missing, so re-runs never rotate anything.
+It creates the `monitoring` namespace and the `influxdb-auth` secret, and only generates what is
+missing, so re-runs never rotate anything.
+
+`grafana-admin` comes from infisical (`homelab` / `prod` / `/monitoring/grafana`, keys `admin-user`
+and `admin-password`) through `gitops/grafana/manifests/infisical-secret.yaml`, see
+`gitops/infisical/README.md`. Enter the values there before grafana syncs.
 
 ```
 # grafana login: admin

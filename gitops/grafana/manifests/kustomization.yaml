@@ -3,6 +3,10 @@ kind: Kustomization
 
 namespace: monitoring
 
+resources:
+  # grafana-admin, synced from infisical
+  - infisical-secret.yaml
+
 # mounted by the chart through dashboardsConfigMaps in ../values.yaml
 configMapGenerator:
   - name: grafana-dashboards-proxmox

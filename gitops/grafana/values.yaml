@@ -1,5 +1,5 @@
 admin:
-  # created by scripts/bootstrap-monitoring-secrets.sh. Without this the chart's default
+  # synced from infisical by manifests/infisical-secret.yaml. Without this the chart's default
   # adminPassword ("strongpassword") is used.
   existingSecret: grafana-admin
   userKey: admin-user
@@ -10,6 +10,10 @@ admin:
 # another node: it waits for the volume, and the old pod holding it waits for the new one.
 deploymentStrategy:
   type: Recreate
+
+# restart when the infisical operator changes grafana-admin
+annotations:
+  secrets.infisical.com/auto-reload: "true"
 
 # dashboards created in the ui live here; the provisioned ones below are read-only
 persistence:
