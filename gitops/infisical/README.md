@@ -37,7 +37,8 @@ so they never land in tofu state.
 | --- | --- | --- |
 | `/monitoring/grafana` | `monitoring/grafana-admin` | `gitops/grafana/manifests/infisical-secret.yaml` |
 | `/monitoring/influxdb` | `monitoring/influxdb-auth` | `gitops/influxdb/manifests/infisical-secret.yaml` |
-| `/pihole/admin` | `pihole/pihole-admin`, `external-dns/pihole-password` | `gitops/pihole/manifests/infisical-secret.yaml` |
+| `/pihole/admin` | `pihole/pihole-admin` | `gitops/pihole/manifests/infisical-secret.yaml` |
+| `/pihole/admin` | `external-dns/pihole-password` | `gitops/external-dns/manifests/infisical-secret.yaml` |
 
 The bootstrap and install scripts still create these for a from-scratch rebuild; the operator takes
 them over once infisical is running.

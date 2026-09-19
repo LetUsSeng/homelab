@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-dns
+  namespace: argocd
+spec:
+  # scripts/install-external-dns.sh is only the bootstrap/break-glass path; it reads the chart
+  # version out of this file.
+  destination:
+    namespace: external-dns
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+    - chart: external-dns
+      repoURL: https://kubernetes-sigs.github.io/external-dns
+      # source of truth for the chart version
+      targetRevision: "1.22.0"
+      helm:
+        # must match the helm release name or every resource gets renamed
+        releaseName: external-dns
+        valueFiles:
+          - $values/gitops/external-dns/values.yaml
+    # doubles as the $values ref and as the source of manifests/, the pihole-password InfisicalSecret
+    - repoURL: https://github.com/LetUsSeng/homelab
+      targetRevision: master
+      path: gitops/external-dns/manifests
+      ref: values
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -8,10 +8,13 @@ Publishes `letusseng.com` records into pihole:
 Records override pihole's `*.letusseng.com -> traefik` wildcard for that name.
 
 ## Install
-- run `./scripts/install-pihole.sh` first
-- `./scripts/install-external-dns.sh` copies the pihole admin password into `external-dns/pihole-password`
-- once infisical is up, `gitops/pihole/manifests/infisical-secret.yaml` keeps that copy in sync, and
-  external-dns restarts when it changes
+Argo syncs the chart and `manifests/` (`gitops/argoproj/apps/external-dns.yaml`, which owns the chart
+version). `./scripts/install-external-dns.sh` is only for bootstrapping a fresh cluster and as the
+break-glass path when argocd is broken: run `./scripts/install-pihole.sh` first, then it copies the
+pihole admin password into `external-dns/pihole-password` and runs the same chart version with helm.
+
+Once infisical is up, `manifests/infisical-secret.yaml` keeps `pihole-password` in sync from
+`/pihole/admin`, and external-dns restarts when it changes.
 
 ## Caveat
 The policy is `upsert-only`, so deleting an Ingress/Service leaves its record in pihole.

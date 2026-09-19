@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PIHOLE_CHART_VERSION=2.38.0
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# NOTE:
+# argocd owns pihole day-to-day (gitops/argoproj/apps/pihole.yaml). This script is the bootstrap path
+# for a fresh cluster and the break-glass path when argocd is broken, so it follows the chart version
+# in the Application, the same way install-argocd.sh does.
+APP_FILE="$ROOT_DIR/gitops/argoproj/apps/pihole.yaml"
+PIHOLE_CHART_VERSION="$(sed -n 's/^ *targetRevision: *"\([0-9][^"]*\)".*/\1/p' "$APP_FILE" | head -1)"
+: "${PIHOLE_CHART_VERSION:?could not read targetRevision from $APP_FILE}"
 
 # NOTE:
 # Pi-hole runs as root but needs no extra capabilities (the router keeps DHCP),

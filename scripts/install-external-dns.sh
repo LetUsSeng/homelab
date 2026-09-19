@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-EXTERNAL_DNS_CHART_VERSION=1.22.0
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# NOTE:
+# argocd owns external-dns day-to-day (gitops/argoproj/apps/external-dns.yaml). This script is the bootstrap path
+# for a fresh cluster and the break-glass path when argocd is broken, so it follows the chart version
+# in the Application, the same way install-argocd.sh does.
+APP_FILE="$ROOT_DIR/gitops/argoproj/apps/external-dns.yaml"
+EXTERNAL_DNS_CHART_VERSION="$(sed -n 's/^ *targetRevision: *"\([0-9][^"]*\)".*/\1/p' "$APP_FILE" | head -1)"
+: "${EXTERNAL_DNS_CHART_VERSION:?could not read targetRevision from $APP_FILE}"
 
 # NOTE:
 # external-dns runs as non-root with all capabilities dropped, so the namespace
