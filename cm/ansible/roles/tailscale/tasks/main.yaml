@@ -1,0 +1,25 @@
+- name: Install Tailscale
+  ansible.builtin.shell: curl -fsSL https://tailscale.com/install.sh | sh
+  args:
+    creates: /usr/bin/tailscale
+
+- name: Get Tailscale status
+  ansible.builtin.command: tailscale status --json
+  register: tailscale_status
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Start up Tailscale
+  when: (tailscale_status.stdout | default('{}', true) | from_json).BackendState | default('') != 'Running'
+  block:
+    - name: Check Tailscale auth key is set
+      ansible.builtin.assert:
+        that: tailscale_auth_key | length > 0
+        fail_msg: TAILSCALE_AUTH_KEY is not set. Run `make apply-with-auth`.
+        quiet: true
+
+    - name: Run tailscale up
+      ansible.builtin.command:
+        argv: "{{ ['tailscale', 'up', '--auth-key=' ~ tailscale_auth_key] + tailscale_up_args }}"
+      no_log: true

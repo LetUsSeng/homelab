@@ -16,3 +16,6 @@ make apply  # apply changes
 
 ## Adding packages
 Add them to `proxmox_packages` in `group_vars/proxmox.yaml`.
+
+## Tailscale
+The `tailscale` role (`roles/tailscale`) installs Tailscale and runs `tailscale up --ssh` on nodes that aren't logged in yet. The first bring-up needs an auth key, so run `make apply-with-auth` to pull `TAILSCALE_AUTH_KEY` from Infisical. After that, a plain `make apply` skips the login step.

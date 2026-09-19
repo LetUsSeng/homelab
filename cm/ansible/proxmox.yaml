@@ -8,11 +8,6 @@
         update_cache: true
         cache_valid_time: 3600
 
-    - name: Install Tailscale
-      ansible.builtin.shell:  curl -fsSL https://tailscale.com/install.sh | sh
-
-    - name: Start up Tailscale
-      ansible.builtin.shell: tailscale up --auth-key=$AUTH_KEY --ssh
-      environment:
-        AUTH_KEY: "{{ lookup('env', 'TAILSCALE_AUTH_KEY') }}"
-      no_log: true
+    - name: Set up Tailscale
+      ansible.builtin.include_role:
+        name: tailscale
