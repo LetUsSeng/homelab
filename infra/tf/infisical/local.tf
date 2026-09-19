@@ -14,5 +14,7 @@ locals {
   folders = {
     monitoring = ["grafana", "influxdb"]
     pihole     = ["admin"]
+    tailscale  = ["auth"]
+    proxmox    = ["creds"]
   }
 }

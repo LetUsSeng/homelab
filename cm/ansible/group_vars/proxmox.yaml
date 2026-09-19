@@ -1,0 +1,3 @@
+proxmox_packages:
+  - jq
+  - curl
