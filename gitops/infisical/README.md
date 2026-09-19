@@ -44,7 +44,8 @@ so they never land in tofu state.
      name: grafana-admin
      namespace: monitoring
    spec:
-     resyncInterval: 60
+     syncConfig:
+       resyncInterval: 1m
      authentication:
        kubernetesAuth:
          identityId: <tofu output k8s_operator_identity_id>
