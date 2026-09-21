@@ -16,3 +16,5 @@ configMapGenerator:
   - name: home-assistant-config
     files:
       - configuration.yaml
+      # seeded into /config/.storage/http by the init container, see README.md
+      - http.json

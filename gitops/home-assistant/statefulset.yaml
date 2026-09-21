@@ -18,14 +18,26 @@ spec:
       # keep resolving cluster services (home-assistant-db-rw) despite hostNetwork
       dnsPolicy: ClusterFirstWithHostNet
       initContainers:
-        # configuration.yaml includes these; home assistant only creates them when it writes its
-        # own default configuration.yaml, which it never does here
-        - name: init-includes
+        - name: init-config
           image: ghcr.io/home-assistant/home-assistant:2026.9.3
-          command: ["sh", "-c", "touch /config/automations.yaml /config/scripts.yaml /config/scenes.yaml"]
+          command:
+            - sh
+            - -c
+            # configuration.yaml includes these; home assistant only creates them when it writes
+            # its own default configuration.yaml, which it never does here.
+            # http.json is overwritten on every start so git stays the source of truth for the
+            # reverse proxy settings (see README.md).
+            - |
+              touch /config/automations.yaml /config/scripts.yaml /config/scenes.yaml
+              mkdir -p /config/.storage
+              cp /seed/http.json /config/.storage/http
+              chmod 600 /config/.storage/http
           volumeMounts:
             - name: config
               mountPath: /config
+            - name: configuration
+              mountPath: /seed
+              readOnly: true
       containers:
         - name: home-assistant
           image: ghcr.io/home-assistant/home-assistant:2026.9.3
