@@ -7,6 +7,7 @@ container install, so no supervisor or add-ons: anything that would be an add-on
 | --- | --- | --- |
 | home assistant | `statefulset.yaml` | `hostNetwork` for lan discovery, `/config` on a 5Gi longhorn pvc |
 | config | `configuration.yaml` | mounted read-only, edits roll the pod (kustomize name hash) |
+| http / reverse proxy | `http.json` | copied to `/config/.storage/http` by the init container on every start |
 | recorder db | `postgres-cluster.yaml` | cnpg `home-assistant-db`, 2 instances; creds in the generated `home-assistant-db-app` |
 | long-term history | `infra/tf/home-assistant` | influxdb bucket `home-assistant` + write-only token |
 
@@ -16,6 +17,19 @@ pod network otherwise. Talos' baseline pod security rejects it, so the namespace
 privileged (`namespace.yaml`). `dnsPolicy: ClusterFirstWithHostNet` keeps cluster dns working, and
 `trusted_proxies` covers both the pod cidr and the node subnet, because traefik's requests can come
 from either.
+
+## Why http.json and not yaml
+Since 2026.9, home assistant keeps its http settings in `.storage/http` as a `stable`/`pending` pair.
+A yaml `http:` block is imported only once, as `pending`, and it reverts to `stable` unless an
+admin confirms it (websocket `http/config/promote`) within 5 minutes. A fresh install behind
+traefik can't do that: onboarding needs the proxy settings before any admin exists. After that
+first import the yaml is ignored for good (`yaml_migration_done`).
+
+So `http.json` holds the whole store file with the proxy settings already in `stable`, and the init
+container overwrites `.storage/http` with it on every start. `stable` is used as-is, with no revert
+timer. Git is the source of truth: http changes made in the ui are reset on the next restart. Put
+them in `http.json` instead. The fields match `HTTP_STORAGE_SCHEMA` in
+`homeassistant/components/http/config.py`; check it for storage version bumps when upgrading.
 
 ## Install
 1. Merge to master. Argo syncs the app: namespace, then the cnpg cluster (wave -1), then home
@@ -47,4 +61,5 @@ influxdb history has no backup, the same as proxmox's metrics.
 
 ## Upgrading
 Bump the image tag in `statefulset.yaml` (both the container and the init container) and read the
-release notes' breaking changes first.
+release notes' breaking changes first. If the `http` storage version changed, update `http.json`
+to match.

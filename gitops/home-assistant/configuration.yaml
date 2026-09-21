@@ -2,14 +2,11 @@
 # automations, backups) lives on the pvc.
 default_config:
 
-http:
-  # traefik terminates tls and forwards to the pod
-  use_x_forwarded_for: true
-  trusted_proxies:
-    # talos' default pod cidr, where traefik runs
-    - 10.244.0.0/16
-    # node subnet: hostNetwork means traffic can also arrive from a node address
-    - 10.0.0.0/24
+# NOTE:
+# No http block. Since 2026.9 home assistant keeps http settings in .storage/http and only imports
+# yaml once, as a "pending" config that reverts unless an admin confirms it within 5 minutes, which
+# can't happen before onboarding behind traefik. The reverse proxy settings live in http.json
+# instead, see README.md.
 
 recorder:
   # cnpg's generated home-assistant-db-app uri, see statefulset.yaml
