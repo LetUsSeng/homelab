@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: home-assistant
+spec:
+  replicas: 1
+  serviceName: home-assistant
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: home-assistant
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: home-assistant
+    spec:
+      # discovery (mDNS, SSDP, broadcasts) only works on the lan itself, not the pod network
+      hostNetwork: true
+      # keep resolving cluster services (home-assistant-db-rw) despite hostNetwork
+      dnsPolicy: ClusterFirstWithHostNet
+      initContainers:
+        # configuration.yaml includes these; home assistant only creates them when it writes its
+        # own default configuration.yaml, which it never does here
+        - name: init-includes
+          image: ghcr.io/home-assistant/home-assistant:2026.9.3
+          command: ["sh", "-c", "touch /config/automations.yaml /config/scripts.yaml /config/scenes.yaml"]
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      containers:
+        - name: home-assistant
+          image: ghcr.io/home-assistant/home-assistant:2026.9.3
+          env:
+            - name: TZ
+              value: UTC
+            - name: HA_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: home-assistant-db-app
+                  key: uri
+          ports:
+            - name: http
+              containerPort: 8123
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: configuration
+              mountPath: /config/configuration.yaml
+              subPath: configuration.yaml
+              readOnly: true
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              memory: 2Gi
+          # first boot installs integration requirements, which can take a few minutes
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+            failureThreshold: 60
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 30
+            failureThreshold: 5
+      volumes:
+        - name: configuration
+          configMap:
+            name: home-assistant-config
+  volumeClaimTemplates:
+    - metadata:
+        name: config
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        # 3 longhorn replicas, so the pod can reschedule onto any node
+        storageClassName: longhorn
+        resources:
+          requests:
+            storage: 5Gi

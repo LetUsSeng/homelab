@@ -1,0 +1,10 @@
+# home assistant runs with hostNetwork for mDNS/SSDP discovery, which talos' default baseline pod
+# security standard rejects, so the namespace has to be privileged (like metallb-system).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: home-assistant
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
