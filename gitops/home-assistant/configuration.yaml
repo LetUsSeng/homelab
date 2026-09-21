@@ -1,0 +1,26 @@
+# Mounted read-only at /config/configuration.yaml. Everything else in /config (.storage, ui-made
+# automations, backups) lives on the pvc.
+default_config:
+
+http:
+  # traefik terminates tls and forwards to the pod
+  use_x_forwarded_for: true
+  trusted_proxies:
+    # talos' default pod cidr, where traefik runs
+    - 10.244.0.0/16
+    # node subnet: hostNetwork means traffic can also arrive from a node address
+    - 10.0.0.0/24
+
+recorder:
+  # cnpg's generated home-assistant-db-app uri, see statefulset.yaml
+  db_url: !env_var HA_DB_URL
+  purge_keep_days: 14
+
+# NOTE:
+# No influxdb block. The integration is ui-configured now: yaml connection settings are imported
+# once and then flagged as deprecated. See README.md for the one-time setup.
+
+# created empty by the init container, the ui writes to them
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml

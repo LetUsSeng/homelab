@@ -1,0 +1,26 @@
+# Home assistant's recorder (state history, logbook, long-term statistics). Two instances on
+# different nodes cover a lost node or disk; cnpg fails over to the replica.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: home-assistant-db
+  annotations:
+    # before the statefulset, so home assistant starts against a ready db
+    argocd.argoproj.io/sync-wave: "-1"
+    # the CRD comes from the cloudnative-pg app, which may not have synced yet on a fresh cluster
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  instances: 2
+  storage:
+    # 1 longhorn replica, strict-local: cnpg does the replication (gitops/longhorn-config)
+    storageClass: longhorn-db
+    size: 5Gi
+  affinity:
+    enablePodAntiAffinity: true
+    podAntiAffinityType: required
+    topologyKey: kubernetes.io/hostname
+  bootstrap:
+    initdb:
+      database: homeassistant
+      owner: homeassistant
+      # no secret: cnpg generates home-assistant-db-app, whose uri key the statefulset reads

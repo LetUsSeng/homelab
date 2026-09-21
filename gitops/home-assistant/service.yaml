@@ -1,0 +1,12 @@
+# endpoints are the node's ip, since the pod runs with hostNetwork
+apiVersion: v1
+kind: Service
+metadata:
+  name: home-assistant
+spec:
+  selector:
+    app.kubernetes.io/name: home-assistant
+  ports:
+    - name: http
+      port: 8123
+      targetPort: http
